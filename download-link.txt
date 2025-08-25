@@ -1,0 +1,4 @@
+# Add your download links here
+# Format: [filename]|[download URL]
+
+mock-exam-premium.pdf|https://example.com/download/mock-exam-package.zip
