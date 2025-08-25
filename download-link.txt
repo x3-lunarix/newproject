@@ -1,4 +1,9 @@
 # Add your download links here
 # Format: [filename]|[download URL]
 
-mock-exam-premium.pdf|https://example.com/download/mock-exam-package.zip
+# Example:
+# mock-exam-premium.pdf|https://example.com/download/mock-exam-package.zip
+
+# Paste your actual download links below (links only):
+
+mock-exam-premium.pdf|https://drive.usercontent.google.com/u/0/uc?id=1DlnjXG52TWFfoEaIQw9sVxVywolAzhST&export=download
