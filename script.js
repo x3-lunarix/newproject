@@ -34,19 +34,94 @@ function createParticles() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    createParticles();
+// Smooth scrolling for navigation links
+function setupSmoothScrolling() {
+    document.querySelectorAll('nav a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            window.scrollTo({
+                top: targetElement.offsetTop - 80,
+                behavior: 'smooth'
+            });
+        });
+    });
+}
+
+// Download functionality
+function setupDownloadButton() {
+    const downloadBtn = document.getElementById('downloadBtn');
     
+    // Fetch download links from the text file
+    fetch('download-link.txt')
+        .then(response => response.text())
+        .then(data => {
+            const lines = data.split('\n');
+            let downloadUrl = '';
+            
+            // Find the first valid download URL
+            for (const line of lines) {
+                if (line.trim() && !line.startsWith('#')) {
+                    const parts = line.split('|');
+                    if (parts.length >= 2 && parts[1].trim().startsWith('http')) {
+                        downloadUrl = parts[1].trim();
+                        break;
+                    }
+                }
+            }
+            
+            if (downloadUrl) {
+                downloadBtn.href = downloadUrl;
+                downloadBtn.setAttribute('download', '');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching download links:', error);
+        });
+    
+    downloadBtn.addEventListener('click', function(e) {
+        if (!this.href || this.href === '#' || this.href === window.location.href) {
+            e.preventDefault();
+            
+            // Create a beautiful download animation
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing download...';
+            this.style.opacity = '0.8';
+            this.style.pointerEvents = 'none';
+            
+            // Simulate download process
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-check"></i> Download Complete!';
+                this.style.background = 'linear-gradient(to right, #00c853, #009624)';
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.style.background = '';
+                    this.style.opacity = '1';
+                    this.style.pointerEvents = 'auto';
+                }, 3000);
+            }, 2000);
+        }
+    });
+}
+
+// Music player functionality
+function setupMusicPlayer() {
     const audio = document.getElementById('backgroundMusic');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const volumeSlider = document.getElementById('volumeSlider');
-    const downloadBtn = document.getElementById('downloadBtn');
     let isPlaying = false;
     
     // Try to play music when user interacts with the page
     document.body.addEventListener('click', function() {
-        if (!isPlaying) {
-            audio.play().catch(e => {
+        if (!isPlaying && audio.paused) {
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }).catch(e => {
                 console.log("Audio play failed: ", e);
             });
         }
@@ -69,30 +144,36 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set initial volume
     audio.volume = volumeSlider.value;
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    createParticles();
+    setupSmoothScrolling();
+    setupDownloadButton();
+    setupMusicPlayer();
     
-    // Download button functionality
-    downloadBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Create a beautiful download animation
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-        downloadBtn.style.opacity = '0.8';
-        downloadBtn.style.pointerEvents = 'none';
-        
-        // Simulate download process
-        setTimeout(() => {
-            // In a real implementation, this would download the file
-            // For now, we'll show a success message
-            downloadBtn.innerHTML = '<i class="fas fa-check"></i> Download Complete!';
-            downloadBtn.style.background = 'linear-gradient(to right, #00c853, #009624)';
-            
-            // Reset after 3 seconds
-            setTimeout(() => {
-                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Now';
-                downloadBtn.style.background = 'linear-gradient(to right, #d10068, #8a0038)';
-                downloadBtn.style.opacity = '1';
-                downloadBtn.style.pointerEvents = 'auto';
-            }, 3000);
-        }, 2000);
+    // Add animation on scroll
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    document.querySelectorAll('.feature, .exam-card, .download-container, .about-content > *').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(el);
     });
 });
